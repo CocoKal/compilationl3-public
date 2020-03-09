@@ -3,11 +3,41 @@ Package sc;
 Helpers
 
 lettre = [['a' .. 'z'] + ['A' .. 'Z']];
+chiffre = ['0' .. '9'];
+alpha = [lettre + ['_' + '$']];
+alphanum = [alpha + chiffre];
 
 Tokens
+sinon = 'sinon';
+si = 'si';
+tantque = 'tantque';
+faire = 'faire';
 
 espaces = (' ' | 13 | 10)+;
 commentaire= '#' [[0 .. 0xffff] - [10 + 13]]* (10 | 13 | 10 13);
+plus ='+';
+minus ='-';
+mult ='*';
+div ='/';
+et = '&';
+ou = '|';
+egal = '=';
+inf = '<';
+negation = '!';
+po = '(';
+pf = ')';
+pv = ';';
+ao = '{';
+af = '}';
+virgule = ',';
+co = '[';
+cf = ']';
+nb = ['0' .. '9']+;
+id = lettre alphanum*;
+alors = ' alors';
+retour = 'retour';
+entier = 'entier ';
+lire = 'lire()';
 
 Ignored Tokens
 
@@ -15,5 +45,43 @@ espaces, commentaire;
 
 Productions
 
-programme = optdecvar listedecfonc ;
+p = ldvo ldf ;
+dv = entier id dv1;
+dv1 = {tab} co nb cf | {vide};
 
+ldf = {decfonc} df ldf | {vide};
+df = id po ld pf ldvo ibloc;
+ldvo = {lisdec} ld pv | {vide};
+ld = {decvar} dv ldvb | {vide};
+ldvb = {decvar2} virgule dv ldvb | {vide};
+
+
+app2 = id po le pf;
+app = id po le pf pv;
+
+var = {id} id | {idexpr} id co expr cf;
+
+le = {expr} expr le1 | {vide} ;
+le1 = {virgule} virgule expr | {vide} ;
+
+li = {li} i li | {vide} ;
+
+i = {affectation} ia | {si} isi | {tantque} itq | {appfonc} iaf | {retour} ir | {bloc} ibloc;
+
+ia = {egalexpr} var egal expr pv | {egalaf} var egal af;
+iaf = app;
+ibloc = ao li af;
+isi = {sialors} si expr alors ibloc
+ |    {sinon} si expr alors [l1]:ibloc sinon [l2]:ibloc;
+itq = tantque expr faire ibloc;
+ir = retour expr pv;
+
+
+
+expr = {ou} expr ou expr1 | {expr1} expr1;
+expr1 = {et} expr1 et expr2 | {expr2} expr2;
+expr2 = {egal} expr2 egal expr3 | {inf} expr2 inf expr3 | {expr3} expr3;
+expr3 = {plus} expr3 plus expr4 | {minus} expr3 minus expr4 | {expr4} expr4;
+expr4 = {mult} expr4 mult expr5 | {div} expr4 div expr5 | {expr5} expr5;
+expr5 = {negation} negation expr5 | {expr6} expr6;
+expr6 = {expr} po expr pf | {nb} nb | {app} app2 | {var} var | {lire} lire;
